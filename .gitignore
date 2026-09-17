@@ -1,0 +1,62 @@
+﻿# ==========================================
+# Altera / Intel Quartus II
+# ==========================================
+db/
+incremental_db/
+output_files/
+simulation/
+.qsys_edit/
+*.qws
+*.rpt
+*.done
+*.summary
+*.smsg
+*.ddb
+*.pin
+*.pof
+*.sof
+*.chg
+*.qsf.bak
+*.qpf.bak
+
+# ==========================================
+# ModelSim / QuestaSim
+# ==========================================
+work/
+transcript
+vsim.wlf
+*.wlf
+*.vstf
+modelsim.ini
+
+# ==========================================
+# Cocotb & Simulation Build
+# ==========================================
+sim_build/
+results.xml
+*.vcd
+*.ghw
+
+# ==========================================
+# Python & Virtual Environments
+# ==========================================
+venv/
+.venv/
+env/
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.pytest_cache/
+
+# ==========================================
+# Operating System & Editor Artifacts
+# ==========================================
+.DS_Store
+Thumbs.db
+*.bak
+*.tmp
+*.orig
+*~
+.vscode/
+.idea/
