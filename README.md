@@ -1,4 +1,4 @@
-﻿# Synthesizable RISC-V RV32I Single-Cycle Processor Core in VHDL
+# Synthesizable RISC-V RV32I Single-Cycle Processor Core in VHDL
 
 [![RISC-V](https://img.shields.io/badge/ISA-RISC--V%20RV32I-blue?style=for-the-badge&logo=riscv&logoColor=white)](https://riscv.org/)
 [![Language](https://img.shields.io/badge/Language-VHDL--2008-purple?style=for-the-badge)](https://en.wikipedia.org/wiki/VHDL)
@@ -25,46 +25,100 @@ A fully synthesizable, single-cycle 32-bit RISC-V processor implementing the **R
 ## Datapath Architecture
 
 ```mermaid
-flowchart TB
-    subgraph Fetch ["1. Instruction Fetch (IF)"]
-        PC["Program Counter (PC)"] --> Add4["PC + 4 Adder"]
-        PC --> IMEM["Instruction Memory (ROM)"]
+%%{init: {
+  "theme": "base",
+  "themeVariables": {
+    "primaryColor": "#1e293b",
+    "primaryTextColor": "#f8fafc",
+    "primaryBorderColor": "#475569",
+    "lineColor": "#94a3b8",
+    "fontSize": "13px",
+    "fontFamily": "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace"
+  },
+  "flowchart": {
+    "curve": "linear",
+    "rankSpacing": 45,
+    "nodeSpacing": 25
+  }
+}}%%
+flowchart LR
+    subgraph IF ["Phase 1: Fetch (IF)"]
+        PC_MUX["PC Next MUX"] --> PC["Program Counter (PC)"]
+        PC --> ADD4["PC + 4 Adder"]
+        PC --> IMEM["Instruction ROM"]
     end
 
-    subgraph Decode ["2. Instruction Decode (ID)"]
-        IMEM -->|"inst[6:0]"| CTRL["Control Unit"]
-        IMEM -->|"inst[19:15], inst[24:20]"| RF["Register File (32x32)"]
-        IMEM -->|"inst[31:0]"| EXT["Sign Extender"]
+    subgraph ID ["Phase 2: Decode (ID)"]
+        CTRL["Control Unit Decoder"]
+        RF["Register File (32 x 32)"]
+        EXT["Sign Extender"]
     end
 
-    subgraph Execute ["3. Execute (EX)"]
-        PC -->|"SrcA MUX"| ALU
-        RF -->|"RD1 (SrcA)"| ALU["Arithmetic Logic Unit (4-bit ALU)"]
-        RF -->|"RD2"| MUX_B["ALU SrcB MUX"]
-        EXT -->|"ImmExt"| MUX_B --> ALU
-        RF -->|"RD1, RD2"| BR["Branch Unit"]
-        PC --> BR
-        EXT --> BR
+    subgraph EX ["Phase 3: Execute (EX)"]
+        SRC_A["SrcA MUX"] --> ALU["4-bit ALU"]
+        SRC_B["SrcB MUX"] --> ALU
+        BR["Branch Unit"]
     end
 
-    subgraph Memory ["4. Data Memory (MEM)"]
-        ALU -->|"addr"| DMEM["Data Memory (RAM)"]
-        RF -->|"write_data"| DMEM
-        IMEM -->|"funct3"| DMEM
+    subgraph MEM ["Phase 4: Memory (MEM)"]
+        DMEM["Data RAM (256B)"]
     end
 
-    subgraph Writeback ["5. Writeback (WB)"]
-        ALU -->|"00"| MUX_WB["Result MUX"]
-        DMEM -->|"01"| MUX_WB
-        Add4 -->|"10 (JAL/JALR Link)"| MUX_WB
-        EXT -->|"11 (LUI)"| MUX_WB
-        MUX_WB -->|"Result"| RF
+    subgraph WB ["Phase 5: Writeback (WB)"]
+        WB_MUX["Result Writeback MUX"]
     end
 
-    BR -->|"Branch / JAL Target"| MUX_PC["PC Next MUX"]
-    Add4 -->|"PC + 4"| MUX_PC
-    ALU -->|"JALR Target"| MUX_PC
-    MUX_PC --> PC
+    %% Fetch to Decode
+    IMEM -->|"inst[6:0]"| CTRL
+    IMEM -->|"inst[19:15, 24:20]"| RF
+    IMEM -->|"inst[31:0]"| EXT
+
+    %% Decode to Execute
+    RF -->|"RD1"| SRC_A
+    PC -->|"PC"| SRC_A
+    RF -->|"RD2"| SRC_B
+    EXT -->|"ImmExt"| SRC_B
+    RF -->|"RD1, RD2"| BR
+    PC -->|"PC"| BR
+    EXT -->|"ImmExt"| BR
+
+    %% Execute to Memory
+    ALU -->|"addr"| DMEM
+    RF -->|"write_data"| DMEM
+    IMEM -->|"funct3"| DMEM
+
+    %% Writeback sources
+    ALU -->|"00: ALU"| WB_MUX
+    DMEM -->|"01: RAM"| WB_MUX
+    ADD4 -->|"10: PC+4"| WB_MUX
+    EXT -->|"11: LUI"| WB_MUX
+
+    %% Feedback paths
+    WB_MUX -->|"Result (rd)"| RF
+    ADD4 -->|"PC + 4"| PC_MUX
+    BR -->|"Branch/JAL Target"| PC_MUX
+    ALU -->|"JALR Target"| PC_MUX
+
+    %% Phase Styling & Colors
+    style IF fill:#0f1d36,stroke:#2563eb,stroke-width:2px,color:#93c5fd
+    style ID fill:#062b27,stroke:#0d9488,stroke-width:2px,color:#5eead4
+    style EX fill:#351b08,stroke:#ea580c,stroke-width:2px,color:#fdba74
+    style MEM fill:#082914,stroke:#16a34a,stroke-width:2px,color:#86efac
+    style WB fill:#250e3a,stroke:#9333ea,stroke-width:2px,color:#d8b4fe
+
+    classDef ifNode fill:#1d4ed8,stroke:#93c5fd,stroke-width:1.5px,color:#ffffff;
+    classDef idNode fill:#0f766e,stroke:#5eead4,stroke-width:1.5px,color:#ffffff;
+    classDef exNode fill:#c2410c,stroke:#fdba74,stroke-width:1.5px,color:#ffffff;
+    classDef memNode fill:#15803d,stroke:#86efac,stroke-width:1.5px,color:#ffffff;
+    classDef wbNode fill:#7e22ce,stroke:#d8b4fe,stroke-width:1.5px,color:#ffffff;
+    classDef ctrlNode fill:#3730a3,stroke:#a5b4fc,stroke-width:1.5px,stroke-dasharray: 4 4,color:#ffffff;
+
+    class PC,ADD4,IMEM,PC_MUX ifNode;
+    class RF,EXT idNode;
+    class CTRL ctrlNode;
+    class ALU,SRC_A,SRC_B,BR exNode;
+    class DMEM memNode;
+    class WB_MUX wbNode;
 ```
 
 ---
