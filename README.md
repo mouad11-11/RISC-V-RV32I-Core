@@ -29,11 +29,9 @@ A fully synthesizable, single-cycle 32-bit RISC-V processor implementing the **R
   "theme": "base",
   "themeVariables": {
     "primaryColor": "#1e293b",
-    "primaryTextColor": "#f8fafc",
+    "primaryTextColor": "#ffffff",
     "primaryBorderColor": "#475569",
-    "lineColor": "#94a3b8",
-    "fontSize": "13px",
-    "fontFamily": "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace"
+    "lineColor": "#94a3b8"
   },
   "flowchart": {
     "curve": "linear",
@@ -42,30 +40,30 @@ A fully synthesizable, single-cycle 32-bit RISC-V processor implementing the **R
   }
 }}%%
 flowchart LR
-    subgraph IF ["Phase 1: Fetch (IF)"]
-        PC_MUX["PC Next MUX"] --> PC["Program Counter (PC)"]
-        PC --> ADD4["PC + 4 Adder"]
-        PC --> IMEM["Instruction ROM"]
+    subgraph IF [" Phase 1: Fetch (IF) "]
+        PC_MUX["&nbsp;&nbsp; PC Next MUX &nbsp;&nbsp;"] --> PC["&nbsp;&nbsp; Program Counter &nbsp;&nbsp;"]
+        PC --> ADD4["&nbsp;&nbsp; PC + 4 Adder &nbsp;&nbsp;"]
+        PC --> IMEM["&nbsp;&nbsp; Instruction ROM &nbsp;&nbsp;"]
     end
 
-    subgraph ID ["Phase 2: Decode (ID)"]
-        CTRL["Control Unit Decoder"]
-        RF["Register File (32 x 32)"]
-        EXT["Sign Extender"]
+    subgraph ID [" Phase 2: Decode (ID) "]
+        CTRL["&nbsp;&nbsp; Control Unit &nbsp;&nbsp;"]
+        RF["&nbsp;&nbsp; Register File (32x32) &nbsp;&nbsp;"]
+        EXT["&nbsp;&nbsp; Sign Extender &nbsp;&nbsp;"]
     end
 
-    subgraph EX ["Phase 3: Execute (EX)"]
-        SRC_A["SrcA MUX"] --> ALU["4-bit ALU"]
-        SRC_B["SrcB MUX"] --> ALU
-        BR["Branch Unit"]
+    subgraph EX [" Phase 3: Execute (EX) "]
+        SRC_A["&nbsp;&nbsp; SrcA MUX &nbsp;&nbsp;"] --> ALU["&nbsp;&nbsp; 4-bit ALU &nbsp;&nbsp;"]
+        SRC_B["&nbsp;&nbsp; SrcB MUX &nbsp;&nbsp;"] --> ALU
+        BR["&nbsp;&nbsp; Branch Unit &nbsp;&nbsp;"]
     end
 
-    subgraph MEM ["Phase 4: Memory (MEM)"]
-        DMEM["Data RAM (256B)"]
+    subgraph MEM [" Phase 4: Memory (MEM) "]
+        DMEM["&nbsp;&nbsp; Data RAM (256B) &nbsp;&nbsp;"]
     end
 
-    subgraph WB ["Phase 5: Writeback (WB)"]
-        WB_MUX["Result Writeback MUX"]
+    subgraph WB [" Phase 5: Writeback (WB) "]
+        WB_MUX["&nbsp;&nbsp; Writeback MUX &nbsp;&nbsp;"]
     end
 
     %% Fetch to Decode
